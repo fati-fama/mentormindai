@@ -1,0 +1,194 @@
+// MentorMind AI — database schema (Supabase PostgreSQL via Prisma)
+// Apply with: npx prisma db push  (or npx prisma migrate dev)
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../lib/generated/prisma"
+  runtime      = "nodejs"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MistakeType {
+  CONCEPTUAL
+  CALCULATION
+  FORMULA_RECALL
+  MISREAD_QUESTION
+  PROCEDURAL
+  CARELESS
+  GUESSING
+  OTHER
+}
+
+enum VectorStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ThemeLayout {
+  FOCUS
+  CLASSIC
+  COMPACT
+}
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  passwordHash        String
+  name                String?
+  educationLevel      String?
+  targetExam          String?
+  examDate            DateTime?
+  targetScore         String?
+  dailyStudyMinutes   Int?
+  onboardingCompleted Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  themePreference ThemePreference?
+  avatarMoodState AvatarMoodState?
+  topicProgress   UserTopicProgress[]
+  quizAttempts    QuizAttempt[]
+  mistakes        Mistake[]
+  books           Book[]
+
+  @@index([targetExam])
+  @@map("users")
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  topics Topic[]
+
+  @@map("subjects")
+}
+
+model Topic {
+  id        String   @id @default(uuid())
+  subjectId String
+  name      String
+  createdAt DateTime @default(now())
+
+  subject      Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  progress     UserTopicProgress[]
+  quizAttempts QuizAttempt[]
+  mistakes     Mistake[]
+
+  @@unique([subjectId, name])
+  @@index([subjectId])
+  @@map("topics")
+}
+
+model UserTopicProgress {
+  id              String    @id @default(uuid())
+  userId          String
+  topicId         String
+  masteryLevel    Float     @default(0)
+  accuracy        Float?
+  attemptCount    Int       @default(0)
+  lastPracticedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@index([topicId])
+  @@map("user_topic_progress")
+}
+
+model QuizAttempt {
+  id               String   @id @default(uuid())
+  userId           String
+  topicId          String
+  correctCount     Int
+  totalQuestions   Int
+  score            Float
+  durationSeconds  Int?
+  details          Json?
+  createdAt        DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([topicId])
+  @@map("quiz_attempts")
+}
+
+model Mistake {
+  id              String     @id @default(uuid())
+  userId          String
+  topicId         String?
+  question        String
+  studentAnswer   String
+  correctAnswer   String?
+  mistakeType     MistakeType @default(OTHER)
+  explanation     String?
+  repetitionCount Int        @default(1)
+  resolved        Boolean    @default(false)
+  lastOccurredAt  DateTime   @default(now())
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic? @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  @@index([userId, resolved])
+  @@index([userId, repetitionCount])
+  @@index([topicId])
+  @@map("mistakes")
+}
+
+model Book {
+  id                 String       @id @default(uuid())
+  userId             String
+  title              String
+  fileUrl            String
+  isPrimaryReference Boolean      @default(false)
+  vectorStatus       VectorStatus @default(PENDING)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isPrimaryReference])
+  @@index([vectorStatus])
+  @@map("books")
+}
+
+model AvatarMoodState {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  moodScore Float    @default(70)
+  factors   Json     @default("{}")
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("avatar_mood_states")
+}
+
+model ThemePreference {
+  id             String      @id @default(uuid())
+  userId         String      @unique
+  layout         ThemeLayout @default(FOCUS)
+  primaryColor   String      @default("#4F46E5")
+  secondaryColor String      @default("#10B981")
+  highContrast   Boolean     @default(false)
+  updatedAt      DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("theme_preferences")
+}
