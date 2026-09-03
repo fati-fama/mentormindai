@@ -2,12 +2,55 @@ import "dotenv/config";
 import { prisma } from "../lib/prisma";
 
 const SUBJECTS_WITH_TOPICS: Record<string, string[]> = {
-  Mathematics: ["Algebra", "Geometry", "Trigonometry", "Calculus", "Statistics & Probability"],
-  Physics: ["Mechanics", "Thermodynamics", "Electricity & Magnetism", "Waves & Optics"],
-  Chemistry: ["Physical Chemistry", "Organic Chemistry", "Inorganic Chemistry"],
-  Biology: ["Cell Biology", "Genetics", "Human Physiology", "Ecology"],
-  "Computer Science": ["Programming Fundamentals", "Data Structures", "Algorithms", "Databases"],
-  English: ["Reading Comprehension", "Grammar & Usage", "Vocabulary", "Essay Writing"],
+  Mathematics: [
+    "Algebra",
+    "Functions",
+    "Trigonometry",
+    "Calculus",
+    "Probability",
+    "Statistics",
+  ],
+  Physics: [
+    "Motion",
+    "Forces",
+    "Work and Energy",
+    "Waves",
+    "Electricity",
+    "Magnetism",
+  ],
+  "Computer Science": [
+    "Programming Fundamentals",
+    "Python",
+    "JavaScript",
+    "Data Structures",
+    "Algorithms",
+    "Databases",
+    "Artificial Intelligence",
+  ],
+  Chemistry: [
+    "Atomic Structure",
+    "Chemical Bonding",
+    "Stoichiometry",
+    "Organic Chemistry",
+    "Thermochemistry",
+    "Equilibrium",
+  ],
+  English: [
+    "Grammar",
+    "Vocabulary",
+    "Essay Writing",
+    "Comprehension",
+    "Creative Writing",
+    "Communication Skills",
+  ],
+  Biology: [
+    "Cell Biology",
+    "Genetics",
+    "Human Anatomy",
+    "Ecology",
+    "Evolution",
+    "Microbiology",
+  ],
 };
 
 async function main() {
@@ -27,7 +70,9 @@ async function main() {
       topicCount += 1;
     }
   }
-  console.log(`Seeded ${Object.keys(SUBJECTS_WITH_TOPICS).length} subjects and ${topicCount} topics.`);
+  console.log(
+    `Seeded ${Object.keys(SUBJECTS_WITH_TOPICS).length} subjects and ${topicCount} topics.`
+  );
 }
 
 main()
