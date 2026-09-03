@@ -319,7 +319,7 @@ export function getAvailableProviders(): Array<{ name: AiProviderName; model: st
   const groqKey = process.env.GROQ_API_KEY;
   result.push({
     name: "Groq",
-    model: process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
+    model: process.env.GROQ_MODEL ?? "llama-3.1-70b-versatile",
     configured: !!groqKey,
   });
 
@@ -365,7 +365,7 @@ function getProviders(preferred?: string | null): ProviderConfig[] {
 
   const groqKey = process.env.GROQ_API_KEY;
   if (groqKey) {
-    const model = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+    const model = process.env.GROQ_MODEL ?? "llama-3.1-70b-versatile";
     allProviders.push({
       name: "Groq",
       apiKey: groqKey,
