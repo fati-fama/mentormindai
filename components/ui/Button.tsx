@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/utils";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "gradient" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,11 +12,16 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-600",
+  primary:
+    "bg-brand text-white hover:bg-brand-hover focus-visible:outline-brand",
+  gradient:
+    "text-white shadow-sm focus-visible:outline-brand",
   secondary:
-    "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 focus-visible:outline-slate-400",
-  ghost: "text-slate-600 hover:bg-slate-200 hover:text-slate-900 focus-visible:outline-slate-400",
-  danger: "bg-rose-600 text-white hover:bg-rose-700 focus-visible:outline-rose-600",
+    "border border-[var(--glass-border)] bg-[var(--glass)] text-ink hover:border-[var(--glass-border-hover)] hover:bg-[var(--glass-strong)] focus-visible:outline-brand",
+  ghost:
+    "text-ink-muted hover:bg-space-700/50 hover:text-ink focus-visible:outline-brand",
+  danger:
+    "bg-danger text-white hover:bg-danger/90 focus-visible:outline-danger",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -26,7 +31,7 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 };
 
 const BASE_CLASSES =
-  "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
 
 export function Button({
   variant = "primary",
@@ -37,12 +42,20 @@ export function Button({
   disabled,
   children,
   type = "button",
+  style,
   ...props
 }: ButtonProps) {
+  const isGradient = variant === "gradient";
+
   return (
     <button
       type={type}
       className={cn(BASE_CLASSES, VARIANT_CLASSES[variant], SIZE_CLASSES[size], className)}
+      style={
+        isGradient
+          ? { ...style, background: "var(--grad-brand)" }
+          : style
+      }
       disabled={disabled || isLoading}
       {...props}
     >

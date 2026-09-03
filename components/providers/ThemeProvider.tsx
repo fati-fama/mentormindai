@@ -11,15 +11,17 @@ export type Theme = {
   blendedPalette: string | null;
   avatarColor: string;
   highContrast: boolean;
+  reducedMotion: boolean;
 };
 
 export const DEFAULT_THEME: Theme = {
   layout: "CLASSIC",
-  primaryColor: "#4F46E5",
-  secondaryColor: "#10B981",
+  primaryColor: "#8B5CF6",
+  secondaryColor: "#22D3EE",
   blendedPalette: null,
-  avatarColor: "#7C3AED",
+  avatarColor: "#8B5CF6",
   highContrast: false,
+  reducedMotion: false,
 };
 
 const ThemeContext = createContext<Theme>(DEFAULT_THEME);
@@ -63,6 +65,8 @@ function applyThemeVars(theme: Theme) {
   root.style.setProperty("--accent", theme.secondaryColor);
   root.style.setProperty("--accent-hover", darken(theme.secondaryColor, 0.12));
   root.style.setProperty("--avatar", theme.avatarColor);
+  root.dataset.reducedMotion = theme.reducedMotion ? "true" : "false";
+  root.dataset.highContrast = theme.highContrast ? "true" : "false";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -82,6 +86,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             ...DEFAULT_THEME,
             ...data,
             blendedPalette: data.blendedPalette ?? null,
+            reducedMotion: data.reducedMotion ?? false,
           };
           setTheme(next);
           applyThemeVars(next);

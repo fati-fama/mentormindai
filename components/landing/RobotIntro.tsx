@@ -3,12 +3,13 @@
 import { Component, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Robot } from "@/components/avatar/Robot";
+import { WhiteRobot } from "@/components/robot/WhiteRobot";
+import { SpeechBubble } from "./SpeechBubble";
 
 const SESSION_KEY = "mentormind-intro-seen";
-const TOTAL_DURATION = 5000;
+const TOTAL_DURATION = 4500;
 
-type Step = 1 | 2 | 3 | 4 | 5 | 6;
+type Step = 1 | 2 | 3 | 4;
 
 class IntroErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -18,7 +19,6 @@ class IntroErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
   }
 
   render() {
-    if (this.state.hasError) return this.props.children;
     return this.props.children;
   }
 }
@@ -43,12 +43,10 @@ function IntroOverlay({ onDone, skip }: { onDone: () => void; skip: boolean }) {
       timerRef.current.push(setTimeout(fn, ms));
     };
 
-    schedule(() => setStep(2), 800);
-    schedule(() => setStep(3), 2000);
-    schedule(() => setStep(4), 2600);
-    schedule(() => setStep(5), 3400);
+    schedule(() => setStep(2), 700);
+    schedule(() => setStep(3), 1800);
     schedule(() => {
-      setStep(6);
+      setStep(4);
       onDone();
     }, TOTAL_DURATION);
 
@@ -58,22 +56,8 @@ function IntroOverlay({ onDone, skip }: { onDone: () => void; skip: boolean }) {
   if (skip) return null;
 
   const robotVariants = {
-    hidden: { y: "110vh", opacity: 0, scale: 1, rotate: 0, x: 0 },
+    hidden: { y: "110vh", opacity: 0 },
     emerge: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 120, damping: 14 } },
-    spinLeft: {
-      y: 0,
-      opacity: 1,
-      x: -120,
-      rotate: -360,
-      scale: 0.65,
-      transition: { duration: 1.2, ease: "easeInOut" as const },
-    },
-    gone: { opacity: 0, transition: { duration: 0.6 } },
-  };
-
-  const logoVariants = {
-    hidden: { opacity: 0, x: 40, scale: 0.8 },
-    visible: { opacity: 1, x: 0, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
   };
 
   const overlayVariants = {
@@ -86,48 +70,53 @@ function IntroOverlay({ onDone, skip }: { onDone: () => void; skip: boolean }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-white"
       variants={overlayVariants}
       initial="visible"
-      animate={step >= 6 ? "hidden" : "visible"}
+      animate={step >= 4 ? "hidden" : "visible"}
       onAnimationComplete={() => {
-        if (step >= 6) onDone();
+        if (step >= 4) onDone();
       }}
     >
-      <div className="relative flex items-center gap-8">
+      <div className="relative flex flex-col items-center gap-4">
+        <AnimatePresence>
+          {step >= 3 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.3 }}
+            >
+              <SpeechBubble>
+                <span className="text-lg font-semibold">Hi!</span>
+              </SpeechBubble>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
           variants={robotVariants}
           initial="hidden"
-          animate={
-            step >= 6
-              ? "gone"
-              : step >= 3
-                ? "spinLeft"
-                : step >= 1
-                  ? "emerge"
-                  : "hidden"
-          }
+          animate={step >= 1 ? "emerge" : "hidden"}
         >
-          <Robot
+          <WhiteRobot
             mood="HAPPY"
             className="h-48 w-48 drop-shadow-xl sm:h-56 sm:w-56"
-            waving={step >= 2 && step < 3}
-            winking={step === 5}
           />
         </motion.div>
 
         <AnimatePresence>
-          {step >= 4 && step < 6 && (
+          {step >= 3 && step < 4 && (
             <motion.div
-              variants={logoVariants}
-              initial="hidden"
-              animate="visible"
+              initial={{ opacity: 0, x: 0, scale: 0.8 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.3 } }}
+              transition={{ duration: 0.5, delay: 0.1 }}
               className="flex flex-col items-center gap-2"
             >
               <img
                 src="/mascot/mentormind-logo.png"
                 alt="MentorMind AI"
-                className="h-20 w-20 rounded-2xl shadow-lg sm:h-24 sm:w-24"
+                className="h-16 w-16 rounded-2xl shadow-lg sm:h-20 sm:w-20"
               />
-              <span className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+              <span className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
                 MentorMind{" "}
                 <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(to right, var(--brand), var(--accent))" }}>
                   AI

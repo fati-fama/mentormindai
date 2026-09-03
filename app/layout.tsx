@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { CosmicBackground } from "@/components/visual/CosmicBackground";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,8 +14,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen text-slate-900 antialiased">
+    <html lang="en" className="dark">
+      <body className="min-h-screen bg-space-950 text-ink antialiased">
+        <CosmicBackground />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

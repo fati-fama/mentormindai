@@ -1,27 +1,85 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #4f46e5;
-  --color-brand-hover: #4338ca;
-  --color-accent: #10b981;
-  --color-accent-hover: #059669;
-  --color-avatar: #7c3aed;
-  --color-surface: #f8fafc;
+  --color-space-950: #050418;
+  --color-space-900: #0a0821;
+  --color-space-850: #100c2e;
+  --color-space-800: #171236;
+  --color-space-700: #221a4d;
+  --color-space-600: #2e2466;
+
+  --color-ink-strong: #f8f7ff;
+  --color-ink: #e4e0fb;
+  --color-ink-muted: #a79fd0;
+  --color-ink-faint: #7a7199;
+
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #fb7185;
+  --color-info: #60a5fa;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-avatar: var(--avatar);
 }
 
 :root {
-  --brand: #4f46e5;
-  --brand-hover: #4338ca;
-  --accent: #10b981;
-  --accent-hover: #059669;
-  --avatar: #7c3aed;
-  --surface: #f8fafc;
+  --brand: #8b5cf6;
+  --brand-hover: #7c3aed;
+  --accent: #22d3ee;
+  --accent-hover: #06b6d4;
+  --avatar: #8b5cf6;
+
+  --glass: rgb(167 139 250 / 0.06);
+  --glass-strong: rgb(167 139 250 / 0.10);
+  --glass-border: rgb(167 139 250 / 0.16);
+  --glass-border-hover: rgb(167 139 250 / 0.30);
+  --glass-blur: 16px;
+
+  --shadow-card: 0 12px 32px -12px rgb(5 4 24 / 0.85), inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+  --glow-brand: 0 0 24px -4px rgb(139 92 246 / 0.55);
+
+  --grad-brand: linear-gradient(135deg, #a78bfa, #8b5cf6 55%, #6366f1);
+  --grad-bar: linear-gradient(180deg, #c4b5fd, #7c3aed);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background-color: var(--surface);
+  background-color: var(--color-space-950);
+  color: var(--color-ink);
 }
 
+/* ── Utility ── */
+@utility glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+/* ── Scrollbar ── */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(167 139 250 / 0.20);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(167 139 250 / 0.35);
+}
+
+/* ── Keyframes ── */
 @keyframes mentormind-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -32,6 +90,57 @@ body {
   50% { transform: rotate(-15deg); }
 }
 
+@keyframes mentormind-twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@keyframes mentormind-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(8px, -12px); }
+  50% { transform: translate(-4px, -20px); }
+  75% { transform: translate(-12px, -8px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes mentormind-glow-pulse {
+  0%, 100% { opacity: 0.4; filter: blur(60px); }
+  50% { opacity: 0.7; filter: blur(80px); }
+}
+
+@keyframes mentormind-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes mentormind-bubble-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  17% { transform: translate(80px, -60px) scale(1.05); }
+  33% { transform: translate(-50px, -110px) scale(0.95); }
+  50% { transform: translate(-90px, -40px) scale(1.02); }
+  67% { transform: translate(-30px, 50px) scale(0.98); }
+  83% { transform: translate(60px, 25px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes mentormind-bubble-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  5% { opacity: 1; }
+  50% { transform: translateY(-45vh) translateX(30px); }
+  95% { opacity: 1; }
+  100% { transform: translateY(-90vh) translateX(-20px); opacity: 0; }
+}
+
+@keyframes mentormind-leg-swing-l {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+@keyframes mentormind-leg-swing-r {
+  0%, 100% { transform: rotate(8deg); }
+  50% { transform: rotate(-8deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -39,4 +148,13 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }

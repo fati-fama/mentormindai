@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
+import { Card } from "@/components/ui/Card";
+import { RobotIcon } from "@/components/ui/icons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -48,65 +50,69 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
-            MentorMind <span className="text-indigo-600">AI</span>
+          <Link href="/" className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand/20">
+              <RobotIcon size={18} className="text-brand" />
+            </span>
+            <span className="text-ink-strong">
+              MentorMind <span className="text-brand">AI</span>
+            </span>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Create your account</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink-strong">Create your account</h1>
+          <p className="mt-2 text-sm text-ink-muted">
             Set up your mentor — it takes less than two minutes a day to keep improving.
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
-        >
-          {error && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">
-              {error}
-            </div>
-          )}
+        <Card variant="glass" className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+                {error}
+              </div>
+            )}
 
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            placeholder="you@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            placeholder="At least 8 characters"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-          <Input
-            label="Confirm password"
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            required
-            placeholder="Repeat your password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-          />
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+            <Input
+              label="Password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+            <Input
+              label="Confirm password"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              placeholder="Repeat your password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
 
-          <Button type="submit" size="lg" className="w-full" isLoading={isSubmitting} loadingText="Creating account…">
-            Create account
-          </Button>
-        </form>
+            <Button type="submit" variant="gradient" size="lg" className="w-full" isLoading={isSubmitting} loadingText="Creating account...">
+              Create account
+            </Button>
+          </form>
+        </Card>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-ink-muted">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link href="/login" className="font-medium text-brand hover:text-brand-hover">
             Sign in
           </Link>
         </p>

@@ -1,4 +1,12 @@
-export const PROMPT_MODES = ["explain", "teach", "hint", "quiz", "mistake-analysis"] as const;
+export const PROMPT_MODES = [
+  "explain",
+  "teach",
+  "hint",
+  "quiz",
+  "revision",
+  "exam",
+  "mistake-analysis",
+] as const;
 export type PromptMode = (typeof PROMPT_MODES)[number];
 
 export const MODE_LABELS: Record<PromptMode, string> = {
@@ -6,6 +14,8 @@ export const MODE_LABELS: Record<PromptMode, string> = {
   teach: "Teach me",
   hint: "Give me a hint",
   quiz: "Quiz me",
+  revision: "Revision sheet",
+  exam: "Exam practice",
   "mistake-analysis": "Analyze my mistake",
 };
 
@@ -143,6 +153,22 @@ Generate practice questions on the topic, matched to the student's mastery level
 You MUST respond with ONLY a valid JSON object — no markdown fences, no commentary — in exactly this shape:
 {"questions":[{"question":"...","options":["...","...","...","..."],"correctIndex":0,"explanation":"...","difficulty":"easy|medium|hard"}]}
 Rules: exactly 4 options per question; correctIndex is the 0-based index of the correct option; every option is plausible; explanations say why the correct option is right and why the tempting wrong options are wrong; difficulty must match the student's tier; produce 5 questions unless the student asks for a different number.`,
+
+  revision: `Mode: REVISION SHEET.
+Produce a condensed, scannable revision sheet the student can review in a few minutes — not a lesson. Use these sections with these exact headings:
+"Core ideas" — 3-5 one-line statements of the essential concepts.
+"Formulas & definitions" — only the ones actually needed for this topic, each with the meaning of every symbol.
+"Your personal traps" — the specific errors this student keeps making, taken from their recent mistakes above. Name each trap and give the one-line correction. If they have no recorded mistakes on this topic, use the traps most students hit instead and say so.
+"Rapid self-test" — exactly 3 short recall prompts, no answers.
+Keep it dense and free of filler. Do not pad with encouragement or restate the profile back to the student.`,
+
+  exam: `Mode: EXAM PRACTICE.
+Set exam-conditions practice at the standard of the student's target exam, matched to their mastery tier.
+Write 3-4 questions building from routine to demanding, structured in parts (a), (b), (c) where the topic allows.
+Show the marks for every part like "[3 marks]", and open with a suggested time allowance based on the total marks.
+After all the questions, print a line containing only "---" and then a "Mark scheme" section awarding marks step by step, so the student can grade themselves honestly.
+Write in the register and notation of a real exam paper for their target exam — terse, precise, no hints inside the question text.
+Respond in plain prose and markdown. Do NOT return JSON.`,
 
   "mistake-analysis": `Mode: MISTAKE ANALYSIS.
 The student is showing you a mistake (either one they describe, or one from their recent mistakes list). Analyze it:

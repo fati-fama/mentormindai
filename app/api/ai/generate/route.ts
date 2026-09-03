@@ -24,10 +24,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const { topicId, query, mode } = parsed.data;
+  const { topicId, query, mode, history } = parsed.data;
 
   try {
-    const result = await generatePersonalizedResponse(user.id, topicId, query, mode);
+    const result = await generatePersonalizedResponse(user.id, topicId, query, mode, history);
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof Error && error.message === "Topic not found for this request") {

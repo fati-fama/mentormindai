@@ -3,13 +3,22 @@
 import { useState, useCallback } from "react";
 import { HexColorPicker } from "react-colorful";
 import { Button } from "@/components/ui";
+import { Card } from "@/components/ui/Card";
+import { Tabs } from "@/components/ui/Tabs";
 import { useTheme, DEFAULT_THEME, useBlendedPalette, type ThemeLayout } from "@/components/providers/ThemeProvider";
-import { Robot } from "@/components/avatar/Robot";
+import { WhiteRobot } from "@/components/robot/WhiteRobot";
 
 const LAYOUT_OPTIONS: { value: ThemeLayout; label: string; desc: string }[] = [
   { value: "FOCUS", label: "Focus", desc: "Minimal sidebar, distraction-free" },
   { value: "CLASSIC", label: "Classic", desc: "Standard layout with full navigation" },
   { value: "COMPACT", label: "Compact", desc: "Dense layout for smaller screens" },
+];
+
+const COSMIC_PRESETS = [
+  { label: "Cosmic Purple", primary: "#8B5CF6", secondary: "#22D3EE" },
+  { label: "Nebula Rose", primary: "#EC4899", secondary: "#F59E0B" },
+  { label: "Aurora Green", primary: "#10B981", secondary: "#6366F1" },
+  { label: "Solar Flare", primary: "#F97316", secondary: "#3B82F6" },
 ];
 
 function relativeLuminance(hex: string): number {
@@ -38,6 +47,7 @@ function pickTextColor(bg: string): string {
 export function ThemeCreator() {
   const current = useTheme();
 
+  const [activeTab, setActiveTab] = useState("colors");
   const [layout, setLayout] = useState<ThemeLayout>(current.layout);
   const [primary, setPrimary] = useState(current.primaryColor);
   const [secondary, setSecondary] = useState(current.secondaryColor);
@@ -75,7 +85,6 @@ export function ThemeCreator() {
         } else {
           setStatus("Theme saved. Refresh to see it everywhere.");
         }
-        // Re-apply CSS vars immediately
         const root = document.documentElement;
         root.style.setProperty("--brand", primary);
         root.style.setProperty("--accent", secondary);
@@ -117,121 +126,191 @@ export function ThemeCreator() {
   return (
     <div className="mx-auto w-full max-w-4xl">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Theme Creator</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-xl font-bold text-ink-strong">Theme Creator</h1>
+        <p className="mt-1 text-sm text-ink-muted">
           Customize your mentor&apos;s look. Colors apply everywhere once saved.
         </p>
       </div>
 
+      <div className="mt-4">
+        <Tabs
+          tabs={[
+            { id: "colors", label: "Colors" },
+            { id: "layout", label: "Layout" },
+            { id: "preview", label: "Preview" },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
+      </div>
+
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-900">Layout</h2>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {LAYOUT_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setLayout(opt.value)}
-                  className={`rounded-lg border p-3 text-left text-sm transition-colors ${
-                    layout === opt.value
-                      ? "border-[var(--brand)] bg-slate-50 ring-1 ring-[var(--brand)]"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <p className="font-medium text-slate-900">{opt.label}</p>
-                  <p className="mt-0.5 text-xs text-slate-500">{opt.desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-900">Colors</h2>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="mb-2 text-xs font-medium text-slate-600">Primary</p>
-                <div className="relative">
+          {activeTab === "layout" && (
+            <Card variant="glass">
+              <h2 className="text-sm font-semibold text-ink-strong">Layout</h2>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {LAYOUT_OPTIONS.map((opt) => (
                   <button
+                    key={opt.value}
                     type="button"
-                    onClick={() => { setShowPrimaryPicker(!showPrimaryPicker); setShowSecondaryPicker(false); setShowAvatarPicker(false); }}
-                    className="flex h-10 w-full items-center gap-2 rounded-lg border border-slate-300 px-3"
+                    onClick={() => setLayout(opt.value)}
+                    className={`rounded-lg border p-3 text-left text-sm transition-colors ${
+                      layout === opt.value
+                        ? "border-brand bg-brand/10 ring-1 ring-brand"
+                        : "border-glass-border hover:border-glass-border-hover"
+                    }`}
                   >
-                    <span className="h-6 w-6 rounded border border-slate-200" style={{ backgroundColor: primary }} />
-                    <span className="text-sm font-mono text-slate-700">{primary}</span>
+                    <p className="font-medium text-ink-strong">{opt.label}</p>
+                    <p className="mt-0.5 text-xs text-ink-faint">{opt.desc}</p>
                   </button>
-                  {showPrimaryPicker && (
-                    <div className="absolute z-10 mt-2">
-                      <HexColorPicker color={primary} onChange={setPrimary} />
-                    </div>
-                  )}
-                </div>
+                ))}
               </div>
-              <div>
-                <p className="mb-2 text-xs font-medium text-slate-600">Secondary</p>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => { setShowSecondaryPicker(!showSecondaryPicker); setShowPrimaryPicker(false); setShowAvatarPicker(false); }}
-                    className="flex h-10 w-full items-center gap-2 rounded-lg border border-slate-300 px-3"
-                  >
-                    <span className="h-6 w-6 rounded border border-slate-200" style={{ backgroundColor: secondary }} />
-                    <span className="text-sm font-mono text-slate-700">{secondary}</span>
-                  </button>
-                  {showSecondaryPicker && (
-                    <div className="absolute z-10 mt-2">
-                      <HexColorPicker color={secondary} onChange={setSecondary} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            </Card>
+          )}
 
-            <div className="mt-4">
-              <p className="mb-2 text-xs font-medium text-slate-600">Avatar Color</p>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => { setShowAvatarPicker(!showAvatarPicker); setShowPrimaryPicker(false); setShowSecondaryPicker(false); }}
-                  className="flex h-10 w-40 items-center gap-2 rounded-lg border border-slate-300 px-3"
-                >
-                  <span className="h-6 w-6 rounded border border-slate-200" style={{ backgroundColor: avatarColor }} />
-                  <span className="text-sm font-mono text-slate-700">{avatarColor}</span>
-                </button>
-                {showAvatarPicker && (
-                  <div className="absolute z-10 mt-2">
-                    <HexColorPicker color={avatarColor} onChange={setAvatarColor} />
-                  </div>
-                )}
-              </div>
-            </div>
+          {activeTab === "colors" && (
+            <Card variant="glass">
+              <h2 className="text-sm font-semibold text-ink-strong">Colors</h2>
 
-            {palette.length > 0 && (
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-medium text-slate-600">Blended Palette</p>
-                <div className="flex gap-1">
-                  {palette.map((c, i) => (
-                    <div key={i} className="h-8 flex-1 rounded" style={{ backgroundColor: c }} title={c} />
+              {/* Preset swatches */}
+              <div className="mt-3">
+                <p className="mb-2 text-xs font-medium text-ink-faint">Presets</p>
+                <div className="flex gap-2">
+                  {COSMIC_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => { setPrimary(preset.primary); setSecondary(preset.secondary); }}
+                      className="flex items-center gap-1.5 rounded-lg border border-glass-border px-2 py-1.5 text-xs text-ink-muted transition-colors hover:border-glass-border-hover"
+                      title={preset.label}
+                    >
+                      <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.primary }} />
+                      <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.secondary }} />
+                    </button>
                   ))}
                 </div>
               </div>
-            )}
 
-            <div className="mt-4 flex items-center gap-2">
-              <span
-                className={`inline-block h-3 w-3 rounded-full ${passContrast ? "bg-emerald-500" : "bg-amber-500"}`}
-              />
-              <span className="text-xs text-slate-600">
-                Contrast ratio: {ratio.toFixed(2)}:1
-                {passContrast ? " (passes WCAG AA)" : " (below WCAG AA — text may be hard to read)"}
-              </span>
-            </div>
-          </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="mb-2 text-xs font-medium text-ink-faint">Primary</p>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => { setShowPrimaryPicker(!showPrimaryPicker); setShowSecondaryPicker(false); setShowAvatarPicker(false); }}
+                      className="flex h-10 w-full items-center gap-2 rounded-lg border border-glass-border bg-space-700/60 px-3"
+                    >
+                      <span className="h-6 w-6 rounded border border-glass-border" style={{ backgroundColor: primary }} />
+                      <span className="text-sm font-mono text-ink-muted">{primary}</span>
+                    </button>
+                    {showPrimaryPicker && (
+                      <div className="absolute z-10 mt-2">
+                        <HexColorPicker color={primary} onChange={setPrimary} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-medium text-ink-faint">Secondary</p>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => { setShowSecondaryPicker(!showSecondaryPicker); setShowPrimaryPicker(false); setShowAvatarPicker(false); }}
+                      className="flex h-10 w-full items-center gap-2 rounded-lg border border-glass-border bg-space-700/60 px-3"
+                    >
+                      <span className="h-6 w-6 rounded border border-glass-border" style={{ backgroundColor: secondary }} />
+                      <span className="text-sm font-mono text-ink-muted">{secondary}</span>
+                    </button>
+                    {showSecondaryPicker && (
+                      <div className="absolute z-10 mt-2">
+                        <HexColorPicker color={secondary} onChange={setSecondary} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-medium text-ink-faint">Avatar Color</p>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => { setShowAvatarPicker(!showAvatarPicker); setShowPrimaryPicker(false); setShowSecondaryPicker(false); }}
+                    className="flex h-10 w-40 items-center gap-2 rounded-lg border border-glass-border bg-space-700/60 px-3"
+                  >
+                    <span className="h-6 w-6 rounded border border-glass-border" style={{ backgroundColor: avatarColor }} />
+                    <span className="text-sm font-mono text-ink-muted">{avatarColor}</span>
+                  </button>
+                  {showAvatarPicker && (
+                    <div className="absolute z-10 mt-2">
+                      <HexColorPicker color={avatarColor} onChange={setAvatarColor} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {palette.length > 0 && (
+                <div className="mt-4">
+                  <p className="mb-2 text-xs font-medium text-ink-faint">Blended Palette</p>
+                  <div className="flex gap-1">
+                    {palette.map((c, i) => (
+                      <div key={i} className="h-8 flex-1 rounded" style={{ backgroundColor: c }} title={c} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 flex items-center gap-2">
+                <span
+                  className={`inline-block h-3 w-3 rounded-full ${passContrast ? "bg-success" : "bg-warning"}`}
+                />
+                <span className="text-xs text-ink-faint">
+                  Contrast ratio: {ratio.toFixed(2)}:1
+                  {passContrast ? " (passes WCAG AA)" : " (below WCAG AA — text may be hard to read)"}
+                </span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="inline-block h-2 w-2 rounded-full bg-success" />
+                <span className="text-xs text-ink-faint">Contrast guard enabled</span>
+              </div>
+            </Card>
+          )}
+
+          {activeTab === "preview" && (
+            <Card variant="glass">
+              <h2 className="text-sm font-semibold text-ink-strong">Live Preview</h2>
+              <div className="mt-3 space-y-3">
+                <div className="rounded-lg p-4" style={{ backgroundColor: primary }}>
+                  <p className="text-sm font-semibold" style={{ color: pickTextColor(primary) }}>
+                    Sample Card Title
+                  </p>
+                  <p className="mt-1 text-xs" style={{ color: pickTextColor(primary), opacity: 0.85 }}>
+                    This is how your primary color looks with text on it.
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-2 rounded-md px-3 py-1.5 text-xs font-medium"
+                    style={{ backgroundColor: secondary, color: pickTextColor(secondary) }}
+                  >
+                    Action Button
+                  </button>
+                </div>
+                <div className="flex items-center gap-3 rounded-lg border border-glass-border p-3">
+                  <WhiteRobot mood="HAPPY" className="h-12 w-12" />
+                  <div>
+                    <p className="text-sm font-medium text-ink-strong">Your Mentor</p>
+                    <p className="text-xs text-ink-faint">Avatar color preview</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-900">Live Preview</h2>
+          <Card variant="glass">
+            <h2 className="text-sm font-semibold text-ink-strong">Live Preview</h2>
             <div className="mt-3 space-y-3">
               <div className="rounded-lg p-4" style={{ backgroundColor: primary }}>
                 <p className="text-sm font-semibold" style={{ color: pickTextColor(primary) }}>
@@ -248,15 +327,15 @@ export function ThemeCreator() {
                   Action Button
                 </button>
               </div>
-              <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
-                <Robot mood="HAPPY" avatarColor={avatarColor} className="h-12 w-12" />
+              <div className="flex items-center gap-3 rounded-lg border border-glass-border p-3">
+                <WhiteRobot mood="HAPPY" className="h-12 w-12" />
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Your Mentor</p>
-                  <p className="text-xs text-slate-500">Avatar color preview</p>
+                  <p className="text-sm font-medium text-ink-strong">Your Mentor</p>
+                  <p className="text-xs text-ink-faint">Avatar color preview</p>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
 
           <div className="flex gap-2">
             <Button onClick={handleSave} isLoading={saving}>
@@ -267,7 +346,7 @@ export function ThemeCreator() {
             </Button>
           </div>
           {status && (
-            <p className="text-sm text-slate-600">{status}</p>
+            <p className="text-sm text-ink-muted">{status}</p>
           )}
         </div>
       </div>

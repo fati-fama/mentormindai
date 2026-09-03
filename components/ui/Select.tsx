@@ -15,20 +15,24 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const SELECT_CLASSES =
-  "block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 focus:-outline-offset-1 disabled:bg-slate-100";
+  "block w-full rounded-lg border border-[var(--glass-border)] bg-space-700/60 px-3 py-2 text-sm text-ink focus:border-brand focus:outline-2 focus:outline-brand focus:-outline-offset-1 disabled:bg-space-800/50 disabled:text-ink-faint";
 
 export function Select({ label, options, error, hint, placeholder, id, name, className, ...props }: SelectProps) {
   const selectId = id ?? name;
   return (
     <div className="space-y-1.5">
-      <label htmlFor={selectId} className="block text-sm font-medium text-slate-700">
+      <label htmlFor={selectId} className="block text-sm font-medium text-ink-muted">
         {label}
       </label>
       <select
         id={selectId}
         name={name}
         aria-invalid={error ? true : undefined}
-        className={cn(SELECT_CLASSES, error && "border-rose-400 focus:border-rose-500 focus:outline-rose-500", className)}
+        className={cn(
+          SELECT_CLASSES,
+          error && "border-danger focus:border-danger focus:outline-danger",
+          className,
+        )}
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}
@@ -38,9 +42,9 @@ export function Select({ label, options, error, hint, placeholder, id, name, cla
           </option>
         ))}
       </select>
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-ink-faint">{hint}</p>}
       {error && (
-        <p className="text-xs text-rose-600" role="alert">
+        <p className="text-xs text-danger" role="alert">
           {error}
         </p>
       )}

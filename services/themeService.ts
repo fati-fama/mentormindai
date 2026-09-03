@@ -9,6 +9,7 @@ export type ThemeInput = {
   blendedPalette?: string | null;
   avatarColor?: string;
   highContrast?: boolean;
+  reducedMotion?: boolean;
 };
 
 export type ContrastCheck = {
@@ -97,6 +98,7 @@ export async function saveTheme(userId: string, input: ThemeInput): Promise<Them
       blendedPalette: input.blendedPalette ?? null,
       avatarColor: input.avatarColor ?? "#7C3AED",
       highContrast: input.highContrast ?? false,
+      reducedMotion: input.reducedMotion ?? false,
     },
     create: {
       userId,
@@ -106,6 +108,7 @@ export async function saveTheme(userId: string, input: ThemeInput): Promise<Them
       blendedPalette: input.blendedPalette ?? null,
       avatarColor: input.avatarColor ?? "#7C3AED",
       highContrast: input.highContrast ?? false,
+      reducedMotion: input.reducedMotion ?? false,
     },
   });
 
@@ -122,6 +125,7 @@ export async function resetTheme(userId: string) {
       blendedPalette: null,
       avatarColor: "#7C3AED",
       highContrast: false,
+      reducedMotion: false,
     },
     create: {
       userId,
@@ -131,6 +135,7 @@ export async function resetTheme(userId: string) {
       blendedPalette: null,
       avatarColor: "#7C3AED",
       highContrast: false,
+      reducedMotion: false,
     },
   });
 }

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Select } from "@/components/ui";
+import { Card } from "@/components/ui/Card";
 import { EDUCATION_LEVELS, TARGET_EXAMS, STUDY_TIME_OPTIONS } from "@/lib/schemas";
 import type { SubjectOption } from "@/types";
 import { cn } from "@/utils";
@@ -149,27 +150,27 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
               key={s.title}
               className={cn(
                 "h-1.5 flex-1 rounded-full transition-colors",
-                index <= step ? "bg-indigo-600" : "bg-slate-200",
+                index <= step ? "bg-brand" : "bg-space-700",
               )}
               aria-hidden="true"
             />
           ))}
         </div>
-        <p className="mt-4 text-xs font-medium uppercase tracking-wide text-indigo-600">
+        <p className="mt-4 text-xs font-medium uppercase tracking-wide text-brand">
           Step {step + 1} of {STEPS.length}
         </p>
-        <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{currentStep.title}</h2>
-        <p className="mt-1 text-sm text-slate-600">{currentStep.description}</p>
+        <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink-strong">{currentStep.title}</h2>
+        <p className="mt-1 text-sm text-ink-muted">{currentStep.description}</p>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <Card variant="glass" className="p-8">
         {stepError && (
-          <div className="mb-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">
+          <div className="mb-5 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
             {stepError}
           </div>
         )}
         {submitError && (
-          <div className="mb-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">
+          <div className="mb-5 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
             {submitError}
           </div>
         )}
@@ -224,7 +225,7 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
 
         {step === 2 && (
           <fieldset>
-            <legend className="mb-4 text-sm font-medium text-slate-700">
+            <legend className="mb-4 text-sm font-medium text-ink-muted">
               How much time can you dedicate to studying each day?
             </legend>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -236,8 +237,8 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
                   className={cn(
                     "rounded-xl border px-4 py-3 text-sm font-medium transition-colors",
                     data.dailyStudyMinutes === minutes
-                      ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/50",
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-glass-border bg-space-700/40 text-ink-muted hover:border-glass-border-hover hover:text-ink",
                   )}
                   aria-pressed={data.dailyStudyMinutes === minutes}
                 >
@@ -250,12 +251,12 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
 
         {step === 3 && (
           <div>
-            <p className="mb-4 text-sm text-slate-600">
+            <p className="mb-4 text-sm text-ink-muted">
               For each subject, mark whether it&apos;s a strength or a weakness. Your mentor adapts
               explanations and quiz difficulty accordingly. Skip subjects you don&apos;t want to track.
             </p>
             {subjects.length === 0 ? (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
                 No subjects are available yet. Run <code className="font-mono">npm run db:seed</code> to
                 load the default subject catalog, then refresh this page.
               </div>
@@ -267,11 +268,11 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
                   return (
                     <li
                       key={subject.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-glass-border px-4 py-3"
                     >
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{subject.name}</p>
-                        <p className="text-xs text-slate-500">{subject.topicCount} topics</p>
+                        <p className="text-sm font-medium text-ink-strong">{subject.name}</p>
+                        <p className="text-xs text-ink-faint">{subject.topicCount} topics</p>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -280,8 +281,8 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
                           className={cn(
                             "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
                             isStrength
-                              ? "border-emerald-600 bg-emerald-600 text-white"
-                              : "border-slate-300 bg-white text-slate-600 hover:border-emerald-500 hover:text-emerald-700",
+                              ? "border-success bg-success text-space-950"
+                              : "border-glass-border bg-space-700/40 text-ink-muted hover:border-success hover:text-success",
                           )}
                           aria-pressed={isStrength}
                         >
@@ -293,8 +294,8 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
                           className={cn(
                             "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
                             isWeakness
-                              ? "border-rose-600 bg-rose-600 text-white"
-                              : "border-slate-300 bg-white text-slate-600 hover:border-rose-500 hover:text-rose-700",
+                              ? "border-danger bg-danger text-space-950"
+                              : "border-glass-border bg-space-700/40 text-ink-muted hover:border-danger hover:text-danger",
                           )}
                           aria-pressed={isWeakness}
                         >
@@ -312,40 +313,40 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
         {step === 4 && (
           <dl className="space-y-4">
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Name</dt>
-              <dd className="text-sm text-slate-900">{data.name}</dd>
+              <dt className="text-sm font-medium text-ink-faint">Name</dt>
+              <dd className="text-sm text-ink-strong">{data.name}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Education level</dt>
-              <dd className="text-sm text-slate-900">{data.educationLevel}</dd>
+              <dt className="text-sm font-medium text-ink-faint">Education level</dt>
+              <dd className="text-sm text-ink-strong">{data.educationLevel}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Target exam</dt>
-              <dd className="text-sm text-slate-900">
+              <dt className="text-sm font-medium text-ink-faint">Target exam</dt>
+              <dd className="text-sm text-ink-strong">
                 {data.targetExam} — {data.targetScore}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Exam date</dt>
-              <dd className="text-sm text-slate-900">{data.examDate}</dd>
+              <dt className="text-sm font-medium text-ink-faint">Exam date</dt>
+              <dd className="text-sm text-ink-strong">{data.examDate}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Daily study time</dt>
-              <dd className="text-sm text-slate-900">
+              <dt className="text-sm font-medium text-ink-faint">Daily study time</dt>
+              <dd className="text-sm text-ink-strong">
                 {data.dailyStudyMinutes !== null ? formatStudyTime(data.dailyStudyMinutes) : "—"}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Strengths</dt>
-              <dd className="text-right text-sm text-emerald-700">
+              <dt className="text-sm font-medium text-ink-faint">Strengths</dt>
+              <dd className="text-right text-sm text-success">
                 {data.strengths.length > 0
                   ? data.strengths.map((id) => subjectById.get(id)?.name).join(", ")
                   : "None selected"}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-sm font-medium text-slate-500">Weaknesses</dt>
-              <dd className="text-right text-sm text-rose-700">
+              <dt className="text-sm font-medium text-ink-faint">Weaknesses</dt>
+              <dd className="text-right text-sm text-danger">
                 {data.weaknesses.length > 0
                   ? data.weaknesses.map((id) => subjectById.get(id)?.name).join(", ")
                   : "None selected"}
@@ -361,12 +362,12 @@ export function OnboardingWizard({ subjects }: { subjects: SubjectOption[] }) {
           {step < STEPS.length - 1 ? (
             <Button onClick={handleNext}>Continue</Button>
           ) : (
-            <Button onClick={handleSubmit} isLoading={isSubmitting} loadingText="Setting up your mentor…">
+            <Button onClick={handleSubmit} isLoading={isSubmitting} loadingText="Setting up your mentor...">
               Finish setup
             </Button>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

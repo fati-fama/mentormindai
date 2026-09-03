@@ -18,8 +18,8 @@ export default async function MentorPage() {
 
   if (topics.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-        <p className="text-sm text-slate-600">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-dashed border-glass-border bg-glass p-12 text-center backdrop-blur-[var(--glass-blur)]">
+        <p className="text-sm text-ink-muted">
           No topics available yet. Please contact your administrator to set up subjects and topics.
         </p>
       </div>

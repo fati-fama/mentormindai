@@ -40,6 +40,9 @@ yarn-error.log*
 # local embedded postgres data
 /.local-pg
 
+# uploaded book files
+/.uploads
+
 # vercel
 .vercel
 

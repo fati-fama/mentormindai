@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui";
-import { Robot, type RobotMood } from "@/components/avatar/Robot";
+import { Button, Select } from "@/components/ui";
+import { WhiteRobot, type WhiteRobotMood } from "@/components/robot/WhiteRobot";
+import { AvatarMoodIndicator } from "@/components/avatar/AvatarMoodIndicator";
+import { CosmicBackground } from "@/components/visual/CosmicBackground";
+import { useSpeech } from "@/components/avatar/useSpeech";
 import { PROMPT_MODES, MODE_LABELS, type PromptMode } from "@/prompts/promptTemplates";
 
 type Message = {
@@ -18,13 +21,17 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  const [mood, setMood] = useState<RobotMood>("HAPPY");
+  const [mood, setMood] = useState<WhiteRobotMood>("HAPPY");
+  const [moodScore, setMoodScore] = useState(75);
+  const [moodReason, setMoodReason] = useState<string | undefined>();
   const [topicId, setTopicId] = useState<string>(topics[0]?.id ?? "");
   const [mode, setMode] = useState<PromptMode>("explain");
   const [messages, setMessages] = useState<Message[]>([]);
   const [query, setQuery] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [speechEnabled, setSpeechEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { supported: speechSupported, speaking, speak, cancel } = useSpeech();
 
   useEffect(() => {
     async function start() {
@@ -57,7 +64,9 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
         const res = await fetch("/api/mood");
         if (res.ok) {
           const data = await res.json();
-          setMood((data.mood as RobotMood) ?? "NEUTRAL");
+          setMood((data.mood as WhiteRobotMood) ?? "NEUTRAL");
+          setMoodScore(data.score ?? 75);
+          setMoodReason(data.reason);
         }
       } catch {
         // non-blocking
@@ -87,16 +96,25 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
     setIsSending(true);
 
     try {
+      const history = messages.slice(-20).map((m) => ({
+        role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+        content: m.content,
+      }));
+
       const res = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topicId, query: trimmed, mode }),
+        body: JSON.stringify({ topicId, query: trimmed, mode, history }),
       });
       const data = await res.json();
+      const reply = data.content ?? data.error ?? "Thinking...";
       setMessages((prev) => [
         ...prev,
-        { id: `m-${Date.now()}`, role: "mentor", content: data.content ?? data.error ?? "Thinking..." },
+        { id: `m-${Date.now()}`, role: "mentor", content: reply },
       ]);
+      if (speechEnabled && speechSupported) {
+        speak(reply);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -105,9 +123,10 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
     } finally {
       setIsSending(false);
     }
-  }, [query, topicId, mode, isSending]);
+  }, [query, topicId, mode, isSending, messages, speechEnabled, speechSupported, speak]);
 
   const endCall = useCallback(async () => {
+    cancel();
     if (sessionId) {
       try {
         await fetch("/api/avatar-call", {
@@ -123,7 +142,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
       }
     }
     router.push("/dashboard/mentor");
-  }, [sessionId, messages.length, elapsed, router]);
+  }, [sessionId, messages.length, elapsed, router, cancel]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -133,36 +152,28 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-slate-900">
-      <div className="flex items-center justify-between border-b border-slate-700 px-6 py-3">
+    <div className="fixed inset-0 z-40 flex flex-col bg-space-950/95 backdrop-blur-sm">
+      {/* Top bar */}
+      <div className="flex items-center justify-between border-b border-glass-border px-6 py-3">
         <div className="flex items-center gap-3">
-          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
-          <span className="text-sm font-medium text-white">Avatar Call</span>
-          <span className="text-sm text-slate-400">{formatTime(elapsed)}</span>
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-danger" />
+          <span className="text-sm font-medium text-ink-strong">Avatar Call</span>
+          <span className="text-sm text-ink-faint">{formatTime(elapsed)}</span>
         </div>
         <div className="flex items-center gap-2">
-          <select
+          <Select
+            label="Topic"
             value={topicId}
             onChange={(e) => setTopicId(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-sm text-white"
-          >
-            {topics.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.subjectName} — {t.name}
-              </option>
-            ))}
-          </select>
-          <select
+            options={topics.map((t) => ({ value: t.id, label: `${t.subjectName} — ${t.name}` }))}
+            className="min-w-[180px]"
+          />
+          <Select
+            label="Mode"
             value={mode}
             onChange={(e) => setMode(e.target.value as PromptMode)}
-            className="rounded-lg border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-sm text-white"
-          >
-            {PROMPT_MODES.map((m) => (
-              <option key={m} value={m}>
-                {MODE_LABELS[m]}
-              </option>
-            ))}
-          </select>
+            options={PROMPT_MODES.map((m) => ({ value: m, label: MODE_LABELS[m] }))}
+          />
           <Button variant="danger" size="sm" onClick={endCall}>
             End Call
           </Button>
@@ -170,19 +181,74 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-1 items-center justify-center bg-slate-800">
-          <div className="text-center">
-            <div className="mx-auto h-48 w-48">
-              <Robot mood={mood} avatarColor="var(--avatar)" className="h-full w-full" />
+        {/* Robot stage */}
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+          <CosmicBackground className="absolute inset-0 overflow-hidden pointer-events-none" />
+          <div className="relative z-10 text-center">
+            <div className="mx-auto h-56 w-56">
+              <WhiteRobot mood={mood} className="h-full w-full" />
             </div>
-            <p className="mt-4 text-sm text-slate-400">Your AI Mentor</p>
+            <div className="mt-4 mx-auto max-w-xs">
+              <AvatarMoodIndicator mood={mood} score={moodScore} reason={moodReason} />
+            </div>
+            {/* Caption band */}
+            {messages.length > 0 && messages[messages.length - 1].role === "mentor" && (
+              <div className="mt-4 mx-auto max-w-md rounded-lg border border-glass-border bg-glass/60 px-4 py-2 backdrop-blur-sm">
+                <p className="text-sm text-ink line-clamp-3">
+                  {messages[messages.length - 1].content}
+                </p>
+              </div>
+            )}
+          </div>
+          {/* Call controls */}
+          <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (speechEnabled) {
+                  cancel();
+                }
+                setSpeechEnabled(!speechEnabled);
+              }}
+              title={speechEnabled ? "Mute speech" : "Unmute speech"}
+              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${
+                speechEnabled
+                  ? "border-brand/50 bg-brand/20 text-brand hover:bg-brand/30"
+                  : "border-glass-border bg-glass text-ink-faint hover:bg-space-700/50"
+              }`}
+            >
+              {speechEnabled ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              )}
+            </button>
+            <button
+              type="button"
+              disabled
+              title="Camera coming soon"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-glass-border bg-glass text-ink-faint opacity-50"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <polygon points="23 7 16 12 23 17 23 7" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        <div className="flex w-80 flex-col border-l border-slate-700 bg-slate-850">
+        {/* Chat panel */}
+        <div className="flex w-80 flex-col border-l border-glass-border bg-space-850">
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
-              <p className="text-center text-sm text-slate-500">
+              <p className="text-center text-sm text-ink-faint">
                 Type a question to start the conversation.
               </p>
             )}
@@ -191,8 +257,8 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
                 <div
                   className={`inline-block max-w-[90%] rounded-xl px-3 py-2 text-sm ${
                     msg.role === "user"
-                      ? "bg-[var(--brand)] text-white"
-                      : "bg-slate-700 text-slate-200"
+                      ? "bg-brand text-white"
+                      : "bg-space-700/60 text-ink border border-glass-border"
                   }`}
                 >
                   <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -200,13 +266,13 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
               </div>
             ))}
             {isSending && (
-              <div className="text-sm text-slate-500">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--brand)]" /> Thinking...
+              <div className="flex items-center gap-2 text-sm text-ink-faint">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-brand" /> Thinking...
               </div>
             )}
           </div>
 
-          <div className="border-t border-slate-700 p-3">
+          <div className="border-t border-glass-border p-3">
             <div className="flex gap-2">
               <textarea
                 value={query}
@@ -214,7 +280,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
                 onKeyDown={handleKeyDown}
                 placeholder="Ask your mentor..."
                 rows={1}
-                className="flex-1 resize-none rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-[var(--brand)] focus:outline-none"
+                className="flex-1 resize-none rounded-lg border border-glass-border bg-space-700/60 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand focus:outline-none"
               />
               <Button size="sm" onClick={sendMessage} isLoading={isSending} disabled={!query.trim()}>
                 Send

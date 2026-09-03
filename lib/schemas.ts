@@ -67,10 +67,16 @@ export const onboardingSchema = z
     path: ["strengths"],
   });
 
+const historyMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().max(4000),
+});
+
 export const aiGenerateRequestSchema = z.object({
   topicId: z.string().min(1, "topicId is required"),
   query: z.string().trim().min(1, "Ask your mentor a question").max(4000),
   mode: z.enum(PROMPT_MODES, "Unknown response mode"),
+  history: z.array(historyMessageSchema).max(20).default([]),
 });
 
 export const quizQuestionSchema = z.object({
@@ -105,6 +111,7 @@ export const themeSchema = z.object({
   blendedPalette: z.string().trim().max(500).optional().nullable(),
   avatarColor: hexColorSchema.optional(),
   highContrast: z.boolean().optional(),
+  reducedMotion: z.boolean().optional(),
 });
 
 export const avatarCallStartSchema = z.object({
@@ -114,6 +121,17 @@ export const avatarCallStartSchema = z.object({
 export const avatarCallEndSchema = z.object({
   sessionId: z.string().min(1, "sessionId is required"),
   sessionSummary: z.string().trim().max(4000).optional().nullable(),
+});
+
+export const quizSubmitSchema = z.object({
+  topicId: z.string().min(1, "topicId is required"),
+  questions: z.array(quizQuestionSchema).min(1).max(20),
+  answers: z.array(
+    z.object({
+      questionIndex: z.number().int().min(0),
+      selectedIndex: z.number().int().min(0).max(3),
+    }),
+  ).min(1),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -126,3 +144,4 @@ export type BookInput = z.infer<typeof bookSchema>;
 export type ThemeInput = z.infer<typeof themeSchema>;
 export type AvatarCallStartInput = z.infer<typeof avatarCallStartSchema>;
 export type AvatarCallEndInput = z.infer<typeof avatarCallEndSchema>;
+export type QuizSubmitInput = z.infer<typeof quizSubmitSchema>;

@@ -47,9 +47,16 @@ enum AvatarCallMode {
   VOICE
 }
 
+enum AiProvider {
+  AUTO
+  OPENAI
+  GROQ
+  GEMINI
+}
+
 model User {
-  id                  String    @id @default(uuid())
-  email               String    @unique
+  id                  String      @id @default(uuid())
+  email               String      @unique
   passwordHash        String
   name                String?
   educationLevel      String?
@@ -57,9 +64,10 @@ model User {
   examDate            DateTime?
   targetScore         String?
   dailyStudyMinutes   Int?
-  onboardingCompleted Boolean   @default(false)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  onboardingCompleted Boolean     @default(false)
+  preferredAiProvider AiProvider  @default(AUTO)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
   themePreference      ThemePreference?
   avatarMoodState      AvatarMoodState?
@@ -171,6 +179,9 @@ model Book {
   author             String?
   edition            String?
   fileUrl            String?
+  filePath           String?
+  fileMime           String?
+  fileSize           Int?
   isPrimaryReference Boolean      @default(false)
   vectorStatus       VectorStatus @default(PENDING)
   createdAt          DateTime     @default(now())
@@ -208,6 +219,7 @@ model ThemePreference {
   blendedPalette String?
   avatarColor    String      @default("#7C3AED")
   highContrast   Boolean     @default(false)
+  reducedMotion  Boolean     @default(false)
   updatedAt      DateTime    @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

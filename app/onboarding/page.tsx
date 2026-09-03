@@ -35,18 +35,18 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-space-950">
+      <header className="border-b border-glass-border bg-space-900/80 backdrop-blur-[var(--glass-blur)]">
         <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-6 py-4">
-          <span className="text-base font-semibold tracking-tight">
-            MentorMind <span className="text-indigo-600">AI</span>
+          <span className="text-base font-semibold tracking-tight text-ink-strong">
+            MentorMind <span className="text-brand">AI</span>
           </span>
-          <p className="text-xs text-slate-500">Welcome, {user.email}</p>
+          <p className="text-xs text-ink-faint">Welcome, {user.email}</p>
         </div>
       </header>
       {subjectsError ? (
         <div className="mx-auto mt-12 w-full max-w-2xl px-6">
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-sm text-rose-700">
+          <div className="rounded-2xl border border-danger/30 bg-danger/10 p-8 text-sm text-danger">
             Could not reach the database. Make sure DATABASE_URL is configured and the database is
             running, then refresh this page.
           </div>
