@@ -33,10 +33,41 @@ export async function POST(request: Request) {
     if (error instanceof Error && error.message === "Topic not found for this request") {
       return NextResponse.json({ error: "That topic does not exist" }, { status: 404 });
     }
-    console.error("AI generate route failed:", error);
+
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("AI generate route failed:", errMsg);
+
+    let category = "AI provider error";
+    let httpStatus = 503;
+
+    if (errMsg.includes("No AI provider configured")) {
+      category = "Invalid API configuration";
+      httpStatus = 500;
+    } else if (errMsg.includes("401") || errMsg.toLowerCase().includes("authentication")) {
+      category = "AI provider authentication failed";
+      httpStatus = 502;
+    } else if (errMsg.includes("403")) {
+      category = "AI provider access forbidden";
+      httpStatus = 502;
+    } else if (errMsg.includes("404") || errMsg.toLowerCase().includes("model")) {
+      category = "AI model unavailable";
+      httpStatus = 502;
+    } else if (errMsg.includes("429") || errMsg.toLowerCase().includes("rate limit")) {
+      category = "AI rate limit reached";
+      httpStatus = 429;
+    } else if (errMsg.includes("500") || errMsg.includes("502") || errMsg.includes("503")) {
+      category = "AI provider server error";
+      httpStatus = 502;
+    } else if (errMsg.includes("abort") || errMsg.includes("timeout") || errMsg.includes("ECONNRESET")) {
+      category = "Network error";
+      httpStatus = 504;
+    }
+
+    console.error("AI error category:", category, "| error:", errMsg.slice(0, 300));
+
     return NextResponse.json(
-      { error: "Your mentor is temporarily unavailable. Please try again in a moment." },
-      { status: 503 },
+      { error: category },
+      { status: httpStatus },
     );
   }
 }

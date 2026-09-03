@@ -408,6 +408,14 @@ export async function callLlmApi(
   preferred?: string | null,
 ): Promise<{ content: string; provider: string }> {
   const providers = getProviders(preferred);
+
+  console.log("[AI] Providers available:", providers.map(p => ({ name: p.name, model: p.model, configured: !!p.apiKey })));
+  console.log("[AI] Key check:", {
+    OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+    GROQ_API_KEY: !!process.env.GROQ_API_KEY,
+    GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+  });
+
   if (providers.length === 0) {
     throw new Error("No AI provider configured. Set OPENAI_API_KEY, GROQ_API_KEY, or GEMINI_API_KEY in .env");
   }
@@ -415,12 +423,15 @@ export async function callLlmApi(
   const errors: string[] = [];
   for (const provider of providers) {
     try {
+      console.log(`[AI] Trying provider: ${provider.name} with model: ${provider.model}`);
+      const startTime = Date.now();
       const content = await provider.call(systemPrompt, userPrompt, history);
+      console.log(`[AI] ${provider.name} responded in ${Date.now() - startTime}ms`);
       return { content, provider: provider.name };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       errors.push(`${provider.name}: ${msg}`);
-      console.warn(`AI provider ${provider.name} failed: ${msg}`);
+      console.warn(`[AI] ${provider.name} failed:`, msg.slice(0, 200));
     }
   }
 
@@ -434,6 +445,14 @@ export async function callLlmApiStream(
   preferred?: string | null,
 ): Promise<{ stream: ReadableStream<string>; provider: string }> {
   const providers = getProviders(preferred);
+
+  console.log("[AI Stream] Providers available:", providers.map(p => ({ name: p.name, model: p.model, configured: !!p.apiKey })));
+  console.log("[AI Stream] Key check:", {
+    OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+    GROQ_API_KEY: !!process.env.GROQ_API_KEY,
+    GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+  });
+
   if (providers.length === 0) {
     throw new Error("No AI provider configured. Set OPENAI_API_KEY, GROQ_API_KEY, or GEMINI_API_KEY in .env");
   }
@@ -441,12 +460,15 @@ export async function callLlmApiStream(
   const errors: string[] = [];
   for (const provider of providers) {
     try {
+      console.log(`[AI Stream] Trying provider: ${provider.name} with model: ${provider.model}`);
+      const startTime = Date.now();
       const stream = await provider.callStream(systemPrompt, userPrompt, history);
+      console.log(`[AI Stream] ${provider.name} connected in ${Date.now() - startTime}ms`);
       return { stream, provider: provider.name };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       errors.push(`${provider.name}: ${msg}`);
-      console.warn(`AI provider ${provider.name} streaming failed: ${msg}`);
+      console.warn(`[AI Stream] ${provider.name} failed (${Date.now()}ms):`, msg.slice(0, 200));
     }
   }
 
