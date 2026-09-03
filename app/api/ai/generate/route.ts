@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("AI generate route failed:", errMsg);
+    console.error("[AI] Route error:", errMsg.slice(0, 500));
 
     let category = "AI provider error";
     let httpStatus = 503;
@@ -43,18 +43,21 @@ export async function POST(request: Request) {
     if (errMsg.includes("No AI provider configured")) {
       category = "Invalid API configuration";
       httpStatus = 500;
-    } else if (errMsg.includes("401") || errMsg.toLowerCase().includes("authentication")) {
+    } else if (errMsg.includes("401") || errMsg.toLowerCase().includes("invalid api key") || errMsg.toLowerCase().includes("incorrect api key")) {
       category = "AI provider authentication failed";
       httpStatus = 502;
     } else if (errMsg.includes("403")) {
       category = "AI provider access forbidden";
       httpStatus = 502;
-    } else if (errMsg.includes("404") || errMsg.toLowerCase().includes("model")) {
+    } else if (errMsg.includes("insufficient_quota") || errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("credits") || errMsg.toLowerCase().includes("billing")) {
+      category = "AI provider quota exceeded — please check billing";
+      httpStatus = 402;
+    } else if (errMsg.includes("429") || errMsg.toLowerCase().includes("rate limit")) {
+      category = "AI rate limit reached — please wait and retry";
+      httpStatus = 429;
+    } else if (errMsg.toLowerCase().includes("model")) {
       category = "AI model unavailable";
       httpStatus = 502;
-    } else if (errMsg.includes("429") || errMsg.toLowerCase().includes("rate limit")) {
-      category = "AI rate limit reached";
-      httpStatus = 429;
     } else if (errMsg.includes("500") || errMsg.includes("502") || errMsg.includes("503")) {
       category = "AI provider server error";
       httpStatus = 502;
@@ -63,7 +66,7 @@ export async function POST(request: Request) {
       httpStatus = 504;
     }
 
-    console.error("AI error category:", category, "| error:", errMsg.slice(0, 300));
+    console.error("[AI] Categorized as:", category);
 
     return NextResponse.json(
       { error: category },
