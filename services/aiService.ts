@@ -7,6 +7,7 @@ import {
   type PromptContext,
   type PromptMode,
 } from "@/prompts/promptTemplates";
+import { getCurrentMood, recalculateMood } from "@/services/moodService";
 
 const DEFAULT_AI_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_AI_MODEL = "gpt-4o-mini";
@@ -33,7 +34,7 @@ async function loadPromptContext(userId: string, topicId: string): Promise<Promp
     }),
     prisma.topic.findUnique({
       where: { id: topicId },
-      select: { name: true, subject: { select: { name: true } } },
+      select: { name: true, subjectId: true, subject: { select: { name: true } } },
     }),
   ]);
 
@@ -41,7 +42,7 @@ async function loadPromptContext(userId: string, topicId: string): Promise<Promp
     return null;
   }
 
-  const [progress, recentMistakes] = await Promise.all([
+  const [progress, recentMistakes, primaryBook, moodInfo] = await Promise.all([
     prisma.userTopicProgress.findUnique({
       where: { userId_topicId: { userId, topicId } },
       select: { masteryLevel: true, accuracy: true },
@@ -52,6 +53,11 @@ async function loadPromptContext(userId: string, topicId: string): Promise<Promp
       take: 5,
       select: { question: true, studentAnswer: true, correctAnswer: true, mistakeType: true },
     }),
+    prisma.book.findFirst({
+      where: { userId, subjectId: topic.subjectId, isPrimaryReference: true },
+      select: { title: true, author: true, edition: true },
+    }),
+    getCurrentMood(userId),
   ]);
 
   return {
@@ -70,6 +76,10 @@ async function loadPromptContext(userId: string, topicId: string): Promise<Promp
       correctAnswer: mistake.correctAnswer,
       mistakeType: mistake.mistakeType,
     })),
+    primaryBook: primaryBook
+      ? { title: primaryBook.title, author: primaryBook.author, edition: primaryBook.edition }
+      : null,
+    moodInfo: { mood: moodInfo.mood, reason: moodInfo.reason },
   };
 }
 
@@ -156,9 +166,11 @@ export async function generatePersonalizedResponse(
 
     if (mode === "quiz") {
       const quiz = parseQuizPayload(content);
+      void recalculateMood(userId);
       return { mode, content: JSON.stringify(quiz, null, 2), quiz, usedFallback: false };
     }
 
+    void recalculateMood(userId);
     return { mode, content, quiz: null, usedFallback: false };
   } catch (error) {
     console.error(`AI generation failed (mode=${mode}, topicId=${topicId}):`, error);

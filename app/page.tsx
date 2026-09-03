@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { RobotIntro } from "@/components/landing/RobotIntro";
 
 const FEATURES = [
   {
@@ -23,16 +24,25 @@ export default async function HomePage() {
   const user = await getCurrentUser();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <RobotIntro>
+      <div className="flex min-h-screen flex-col">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-        <span className="text-lg font-semibold tracking-tight">
-          MentorMind <span className="text-indigo-600">AI</span>
+        <span className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <img
+            src="/mascot/mentormind-logo.png"
+            alt=""
+            aria-hidden="true"
+            className="h-8 w-8 rounded-full"
+          />
+          <span>
+            MentorMind <span className="text-[var(--brand)]">AI</span>
+          </span>
         </span>
         <nav className="flex items-center gap-2 text-sm">
           {user ? (
             <Link
               href="/dashboard"
-              className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700"
+              className="rounded-lg bg-[var(--brand)] px-4 py-2 font-medium text-white transition-colors hover:bg-[var(--brand-hover)]"
             >
               Go to dashboard
             </Link>
@@ -46,7 +56,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700"
+                className="rounded-lg bg-[var(--brand)] px-4 py-2 font-medium text-white transition-colors hover:bg-[var(--brand-hover)]"
               >
                 Get started
               </Link>
@@ -56,12 +66,17 @@ export default async function HomePage() {
       </header>
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-6 text-center">
-        <p className="mb-4 inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+        <p className="mb-4 inline-flex items-center rounded-full border border-[color-mix(in_srgb,var(--brand)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand)_10%,white)] px-3 py-1 text-xs font-medium text-[var(--brand)]">
           Your personal AI study mentor
         </p>
         <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
           Don&apos;t just ask AI.
-          <span className="block bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent">
+          <span
+            className="block bg-clip-text text-transparent"
+            style={{
+              backgroundImage: `linear-gradient(to right, var(--brand), var(--accent))`,
+            }}
+          >
             Let AI understand how you learn.
           </span>
         </h1>
@@ -75,7 +90,7 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/register"
-              className="rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+              className="rounded-lg bg-[var(--brand)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-hover)]"
             >
               Start your setup
             </Link>
@@ -102,5 +117,6 @@ export default async function HomePage() {
         MentorMind AI — a personalized intelligence layer that turns AI into an adaptive academic mentor.
       </footer>
     </div>
+    </RobotIntro>
   );
 }

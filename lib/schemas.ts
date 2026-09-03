@@ -85,9 +85,44 @@ export const quizPayloadSchema = z.object({
   questions: z.array(quizQuestionSchema).min(1).max(20),
 });
 
+const hexColorSchema = z
+  .string()
+  .trim()
+  .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color like #4F46E5");
+
+export const bookSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200),
+  author: z.string().trim().max(120).optional().nullable(),
+  edition: z.string().trim().max(80).optional().nullable(),
+  subjectId: z.string().min(1).optional().nullable(),
+  fileUrl: z.string().trim().max(500).optional().nullable(),
+});
+
+export const themeSchema = z.object({
+  layout: z.enum(["FOCUS", "CLASSIC", "COMPACT"], "Unknown layout"),
+  primaryColor: hexColorSchema,
+  secondaryColor: hexColorSchema,
+  blendedPalette: z.string().trim().max(500).optional().nullable(),
+  avatarColor: hexColorSchema.optional(),
+  highContrast: z.boolean().optional(),
+});
+
+export const avatarCallStartSchema = z.object({
+  mode: z.enum(["TEXT", "VOICE"]).default("TEXT"),
+});
+
+export const avatarCallEndSchema = z.object({
+  sessionId: z.string().min(1, "sessionId is required"),
+  sessionSummary: z.string().trim().max(4000).optional().nullable(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
 export type AiGenerateInput = z.infer<typeof aiGenerateRequestSchema>;
 export type QuizQuestion = z.infer<typeof quizQuestionSchema>;
 export type QuizPayload = z.infer<typeof quizPayloadSchema>;
+export type BookInput = z.infer<typeof bookSchema>;
+export type ThemeInput = z.infer<typeof themeSchema>;
+export type AvatarCallStartInput = z.infer<typeof avatarCallStartSchema>;
+export type AvatarCallEndInput = z.infer<typeof avatarCallEndSchema>;

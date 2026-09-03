@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand: #4f46e5;
+  --color-brand-hover: #4338ca;
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-avatar: #7c3aed;
+  --color-surface: #f8fafc;
+}
+
+:root {
+  --brand: #4f46e5;
+  --brand-hover: #4338ca;
+  --accent: #10b981;
+  --accent-hover: #059669;
+  --avatar: #7c3aed;
+  --surface: #f8fafc;
+}
+
+body {
+  background-color: var(--surface);
+}
+
+@keyframes mentormind-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes mentormind-wave {
+  0%, 100% { transform: rotate(-40deg); }
+  50% { transform: rotate(-15deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { DashboardHeader } from "@/components/dashboard";
+import { AvatarMoodIndicator } from "@/components/avatar/AvatarMoodIndicator";
 import { daysUntil, formatMinutes, formatDate } from "@/utils";
 import type { TopicProgressSummary } from "@/types";
+import type { RobotMood } from "@/components/avatar/Robot";
 
 export const metadata = {
   title: "Dashboard",
@@ -35,7 +37,7 @@ export default async function DashboardPage() {
       examDate: true,
       targetScore: true,
       dailyStudyMinutes: true,
-      avatarMoodState: { select: { moodScore: true } },
+      avatarMoodState: { select: { currentMood: true, moodScore: true, moodReason: true } },
       topicProgress: {
         orderBy: [{ masteryLevel: "asc" }],
         take: 8,
@@ -61,12 +63,13 @@ export default async function DashboardPage() {
   }));
 
   const examCountdown = profile?.examDate ? daysUntil(profile.examDate) : null;
+  const mood: RobotMood = (profile?.avatarMoodState?.currentMood as RobotMood) ?? "NEUTRAL";
+  const moodScore = profile?.avatarMoodState?.moodScore ?? 70;
+  const moodReason =
+    profile?.avatarMoodState?.moodReason ?? "Your mentor is ready to help you learn.";
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <DashboardHeader userName={profile?.name ?? null} />
-
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
+    <div className="mx-auto w-full max-w-5xl">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
           Welcome back, {profile?.name ?? "student"}.
         </h1>
@@ -96,14 +99,7 @@ export default async function DashboardPage() {
             </p>
             <p className="text-sm text-slate-500">Committed per day</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Mentor mood</p>
-            <p className="mt-2 text-lg font-semibold text-slate-900">
-              {profile?.avatarMoodState?.moodScore ?? 70}
-              <span className="text-sm font-normal text-slate-500"> / 100</span>
-            </p>
-            <p className="text-sm text-slate-500">Based on your recent activity</p>
-          </div>
+          <AvatarMoodIndicator mood={mood} score={moodScore} reason={moodReason} />
         </section>
 
         <section className="mt-10">
@@ -125,13 +121,13 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-slate-900">{topic.topicName}</p>
                       <p className="text-xs text-slate-500">{topic.subjectName}</p>
                     </div>
-                    <span className="text-xs font-medium text-indigo-600">
+                    <span className="text-xs font-medium text-[var(--brand)]">
                       {masteryLabel(topic.masteryLevel)}
                     </span>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={Math.round(topic.masteryLevel)} aria-valuemin={0} aria-valuemax={100} aria-label={`${topic.topicName} mastery`}>
                     <div
-                      className="h-full rounded-full bg-indigo-600 transition-all"
+                      className="h-full rounded-full bg-[var(--brand)] transition-all"
                       style={{ width: `${Math.max(2, topic.masteryLevel)}%` }}
                     />
                   </div>
@@ -146,14 +142,36 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
-          <h2 className="text-base font-semibold text-slate-900">Your AI mentor chat</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-            The personalized mentor chat — with Explain, Teach, Hint, Quiz, and Mistake Analysis modes —
-            arrives in the next phase.
-          </p>
+        <section className="mt-10 grid gap-4 md:grid-cols-2">
+          <Link
+            href="/dashboard/mentor"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-[var(--brand)] hover:shadow-md"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--brand)]">AI mentor</p>
+            <h2 className="mt-1 text-base font-semibold text-slate-900">Talk to your mentor</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Explain, Teach, Hint, Quiz, or Mistake Analysis — your mentor answers in your voice,
+              calibrated to your current level.
+            </p>
+            <p className="mt-4 text-sm font-medium text-[var(--brand)] group-hover:underline">
+              Open the chat →
+            </p>
+          </Link>
+          <Link
+            href="/dashboard/books"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-[var(--accent)] hover:shadow-md"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--accent)]">Book library</p>
+            <h2 className="mt-1 text-base font-semibold text-slate-900">Your course books</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Add the books you&apos;re actually studying from. Your mentor will mirror their
+              terminology and approach.
+            </p>
+            <p className="mt-4 text-sm font-medium text-[var(--accent)] group-hover:underline">
+              Manage books →
+            </p>
+          </Link>
         </section>
-      </main>
     </div>
   );
 }

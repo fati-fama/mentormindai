@@ -36,6 +36,17 @@ enum ThemeLayout {
   COMPACT
 }
 
+enum AvatarMood {
+  HAPPY
+  NEUTRAL
+  SAD
+}
+
+enum AvatarCallMode {
+  TEXT
+  VOICE
+}
+
 model User {
   id                  String    @id @default(uuid())
   email               String    @unique
@@ -50,12 +61,13 @@ model User {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  themePreference ThemePreference?
-  avatarMoodState AvatarMoodState?
-  topicProgress   UserTopicProgress[]
-  quizAttempts    QuizAttempt[]
-  mistakes        Mistake[]
-  books           Book[]
+  themePreference      ThemePreference?
+  avatarMoodState      AvatarMoodState?
+  avatarCallSessions   AvatarCallSession[]
+  topicProgress        UserTopicProgress[]
+  quizAttempts         QuizAttempt[]
+  mistakes             Mistake[]
+  books                Book[]
 
   @@index([targetExam])
   @@map("users")
@@ -67,6 +79,7 @@ model Subject {
   createdAt DateTime @default(now())
 
   topics Topic[]
+  books  Book[]
 
   @@map("subjects")
 }
@@ -153,26 +166,33 @@ model Mistake {
 model Book {
   id                 String       @id @default(uuid())
   userId             String
+  subjectId          String?
   title              String
-  fileUrl            String
+  author             String?
+  edition            String?
+  fileUrl            String?
   isPrimaryReference Boolean      @default(false)
   vectorStatus       VectorStatus @default(PENDING)
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
 
+  @@index([userId, subjectId])
   @@index([userId, isPrimaryReference])
   @@index([vectorStatus])
   @@map("books")
 }
 
 model AvatarMoodState {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  moodScore Float    @default(70)
-  factors   Json     @default("{}")
-  updatedAt DateTime @updatedAt
+  id          String     @id @default(uuid())
+  userId      String     @unique
+  currentMood AvatarMood @default(NEUTRAL)
+  moodScore   Float      @default(70)
+  moodReason  String     @default("Your mentor is ready to help you learn.")
+  factors     Json       @default("{}")
+  updatedAt   DateTime   @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -185,10 +205,27 @@ model ThemePreference {
   layout         ThemeLayout @default(FOCUS)
   primaryColor   String      @default("#4F46E5")
   secondaryColor String      @default("#10B981")
+  blendedPalette String?
+  avatarColor    String      @default("#7C3AED")
   highContrast   Boolean     @default(false)
   updatedAt      DateTime    @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("theme_preferences")
+}
+
+model AvatarCallSession {
+  id              String           @id @default(uuid())
+  userId          String
+  startTime       DateTime         @default(now())
+  endTime         DateTime?
+  mode            AvatarCallMode   @default(TEXT)
+  sessionSummary  String?
+  createdAt       DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startTime])
+  @@map("avatar_call_sessions")
 }

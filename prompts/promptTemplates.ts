@@ -27,6 +27,8 @@ export interface PromptContext {
   masteryLevel: number;
   accuracy: number | null;
   recentMistakes: RecentMistake[];
+  primaryBook: { title: string; author: string | null; edition: string | null } | null;
+  moodInfo: { mood: string; reason: string } | null;
 }
 
 export interface MasteryTier {
@@ -154,7 +156,7 @@ Be kind but honest — never blame the student, but never soften the rigor.`,
 
 export function buildSystemPrompt(mode: PromptMode, context: PromptContext): string {
   const tier = formatMasteryTier(context.masteryLevel);
-  return [
+  const sections: string[] = [
     PERSONALITY_PROMPT,
     "",
     "STUDENT PROFILE (use this to personalize every response):",
@@ -164,8 +166,33 @@ export function buildSystemPrompt(mode: PromptMode, context: PromptContext): str
     "",
     formatRecentMistakes(context),
     "",
-    MODE_INSTRUCTIONS[mode],
-  ].join("\n");
+  ];
+
+  if (context.primaryBook) {
+    const book = context.primaryBook;
+    const parts = [book.title];
+    if (book.author) parts.push(`by ${book.author}`);
+    if (book.edition) parts.push(`(${book.edition})`);
+    sections.push(
+      `The student's primary reference for ${context.subjectName} is ${parts.join(" ")}. Prefer its terminology and notation when relevant.`,
+      "",
+    );
+  }
+
+  if (context.moodInfo) {
+    const { mood, reason } = context.moodInfo;
+    const toneLine =
+      mood === "SAD"
+        ? `The student's mentor-mood is ${mood.toLowerCase()} because ${reason} Lead with encouragement, offer a small win early, and keep the tone warm.`
+        : mood === "HAPPY"
+          ? `The student's mentor-mood is ${mood.toLowerCase()} because ${reason} Keep the energy positive and challenge them to go further.`
+          : `The student's mentor-mood is ${mood.toLowerCase()}. Keep a steady, supportive tone.`;
+    sections.push(toneLine, "");
+  }
+
+  sections.push(MODE_INSTRUCTIONS[mode]);
+
+  return sections.join("\n");
 }
 
 export function buildUserPrompt(mode: PromptMode, context: PromptContext, userQuery: string): string {
