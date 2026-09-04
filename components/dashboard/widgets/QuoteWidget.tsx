@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshIcon, HeartIcon } from "@/components/ui/icons";
-import { WhiteRobotFace } from "@/components/robot/WhiteRobot";
 
 interface QuoteWidgetProps {
   userName: string | null;
@@ -102,27 +101,7 @@ export function QuoteWidget({ userName, subjectNames, overallProgress }: QuoteWi
   };
 
   return (
-    <Card variant="glass" className="overflow-visible">
-      <style>{`
-        @keyframes mentormind-leg-swing {
-          0%, 100% { transform: rotate(-8deg); }
-          50% { transform: rotate(8deg); }
-        }
-      `}</style>
-
-      {/* Robot face peeking above */}
-      <div className="absolute left-1/2 -top-10 z-10 h-14 w-14 -translate-x-1/2">
-        <WhiteRobotFace mood="HAPPY" className="h-full w-full" />
-      </div>
-
-      {/* Robot hands gripping top edge */}
-      <div className="absolute -top-2 left-[22%] z-20 h-4 w-4 rounded-full border-2 border-slate-200 bg-white shadow-sm" />
-      <div className="absolute -top-2 left-[34%] z-20 h-4 w-4 rounded-full border-2 border-slate-200 bg-white shadow-sm" />
-
-      {/* Robot legs swinging below */}
-      <div className="absolute -bottom-4 left-[38%] z-10 h-5 w-3 origin-top rounded-b-full bg-white shadow-sm" style={{ animation: "mentormind-leg-swing 2s ease-in-out infinite" }} />
-      <div className="absolute -bottom-4 left-[50%] z-10 h-5 w-3 origin-top rounded-b-full bg-white shadow-sm" style={{ animation: "mentormind-leg-swing 2s ease-in-out infinite 0.3s" }} />
-
+    <Card variant="glass">
       <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-transparent to-accent/5" />
       <div className="relative">
         <div className="mb-3 flex items-start justify-between">

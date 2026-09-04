@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { RobotIntro } from "@/components/landing/RobotIntro";
 import { FloatingStudyItems } from "@/components/landing/FloatingStudyItems";
-import { WhiteRobot } from "@/components/robot/WhiteRobot";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
@@ -92,9 +91,6 @@ export default async function HomePage() {
             Smarter Study &bull; Better Results &bull; Bigger Dreams
           </p>
 
-          <div className="mt-6 h-64 w-64 sm:h-80 sm:w-80">
-            <WhiteRobot mood="HAPPY" className="h-full w-full" />
-          </div>
 
           {!user && (
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

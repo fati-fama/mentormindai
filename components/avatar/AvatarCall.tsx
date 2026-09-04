@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Select } from "@/components/ui";
-import { WhiteRobot, type WhiteRobotMood } from "@/components/robot/WhiteRobot";
+import { MentorRobot } from "@/components/avatar/MentorRobot";
+import { type WhiteRobotMood } from "@/components/robot/WhiteRobot";
 import { AvatarMoodIndicator } from "@/components/avatar/AvatarMoodIndicator";
 import { CosmicBackground } from "@/components/visual/CosmicBackground";
 import { useSpeech } from "@/components/avatar/useSpeech";
+import { useAvatarRobotControls } from "@/components/avatar/RobotControls";
 import { PROMPT_MODES, MODE_LABELS, type PromptMode } from "@/prompts/promptTemplates";
 
 type Message = {
@@ -32,6 +34,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
   const [speechEnabled, setSpeechEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { supported: speechSupported, speaking, speak, cancel } = useSpeech();
+  const robotControls = useAvatarRobotControls(speaking);
 
   useEffect(() => {
     async function start() {
@@ -44,6 +47,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
         if (res.ok) {
           const data = await res.json();
           setSessionId(data.session.id);
+          robotControls.onCallStarted();
         }
       } catch {
         // Non-blocking; call UI still works without server tracking
@@ -94,6 +98,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", content: trimmed }]);
     setQuery("");
     setIsSending(true);
+    robotControls.onUserSentMessage();
 
     try {
       const history = messages.slice(-20).map((m) => ({
@@ -112,6 +117,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
         ...prev,
         { id: `m-${Date.now()}`, role: "mentor", content: reply },
       ]);
+      robotControls.onAiResponseReceived();
       if (speechEnabled && speechSupported) {
         speak(reply);
       }
@@ -123,10 +129,11 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
     } finally {
       setIsSending(false);
     }
-  }, [query, topicId, mode, isSending, messages, speechEnabled, speechSupported, speak]);
+  }, [query, topicId, mode, isSending, messages, speechEnabled, speechSupported, speak, robotControls]);
 
   const endCall = useCallback(async () => {
     cancel();
+    robotControls.onCallEnding();
     if (sessionId) {
       try {
         await fetch("/api/avatar-call", {
@@ -142,7 +149,7 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
       }
     }
     router.push("/dashboard/mentor");
-  }, [sessionId, messages.length, elapsed, router, cancel]);
+  }, [sessionId, messages.length, elapsed, router, cancel, robotControls]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -185,8 +192,8 @@ export function AvatarCall({ topics }: { topics: TopicOption[] }) {
         <div className="relative flex flex-1 items-center justify-center overflow-hidden">
           <CosmicBackground className="absolute inset-0 overflow-hidden pointer-events-none" />
           <div className="relative z-10 text-center">
-            <div className="mx-auto h-56 w-56">
-              <WhiteRobot mood={mood} className="h-full w-full" />
+            <div className="mx-auto h-80 w-80">
+              <MentorRobot state={robotControls.state} className="h-full w-full" />
             </div>
             <div className="mt-4 mx-auto max-w-xs">
               <AvatarMoodIndicator mood={mood} score={moodScore} reason={moodReason} />
