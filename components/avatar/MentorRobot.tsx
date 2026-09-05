@@ -66,7 +66,7 @@ function MentorRobotInner({ state = "idle", className }: MentorRobotProps) {
       `}</style>
       <div className="mentor-robot" style={{ width: "100%", height: "100%" }}>
         <Canvas
-          camera={{ position: [0, 0.8, 3.5], fov: 35 }}
+          camera={{ position: [0, 0.5, 4.2], fov: 42 }}
           gl={{ antialias: true, alpha: true }}
           style={{ width: "100%", height: "100%", background: "transparent" }}
         >
