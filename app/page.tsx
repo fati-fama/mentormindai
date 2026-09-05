@@ -4,6 +4,7 @@ import { RobotIntro } from "@/components/landing/RobotIntro";
 import { FloatingStudyItems } from "@/components/landing/FloatingStudyItems";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { MentorRobot } from "@/components/avatar/MentorRobot";
 
 const FEATURES = [
   {
@@ -91,6 +92,10 @@ export default async function HomePage() {
             Smarter Study &bull; Better Results &bull; Bigger Dreams
           </p>
 
+          {/* 3D Robot */}
+          <div className="mt-6 h-64 w-64 sm:h-72 sm:w-72">
+            <MentorRobot state="greeting" className="h-full w-full" />
+          </div>
 
           {!user && (
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
