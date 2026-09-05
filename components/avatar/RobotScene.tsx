@@ -74,19 +74,19 @@ function Face({
   const smileGeo = useMemo(() => new THREE.ShapeGeometry(smileShape, 16), [smileShape]);
 
   const scleraMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.2, metalness: 0 }),
+    () => new THREE.MeshStandardMaterial({ color: "#c4b5fd", roughness: 0.2, metalness: 0.1, emissive: "#8B5CF6", emissiveIntensity: 0.15 }),
     [],
   );
   const pupilMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#1a1a2e", roughness: 0.3, metalness: 0 }),
+    () => new THREE.MeshStandardMaterial({ color: "#4c1d95", roughness: 0.3, metalness: 0.1, emissive: "#7C3AED", emissiveIntensity: 0.3 }),
     [],
   );
   const catchlightMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0, metalness: 0, emissive: "#ffffff", emissiveIntensity: 0.3 }),
+    () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0, metalness: 0, emissive: "#ffffff", emissiveIntensity: 0.5 }),
     [],
   );
   const mouthMat = useMemo(() => new THREE.MeshStandardMaterial(PURPLE_GLOW_SOFT), []);
-  const happyEyeMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#1a1a2e", roughness: 0.3 }), []);
+  const happyEyeMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#7C3AED", roughness: 0.3, emissive: "#8B5CF6", emissiveIntensity: 0.4 }), []);
 
   const eyeRadius = 0.1;
   const pupilRadius = 0.055;
