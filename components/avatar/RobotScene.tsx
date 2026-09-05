@@ -25,16 +25,6 @@ function lerp(current: number, target: number, speed: number, delta: number): nu
   return THREE.MathUtils.lerp(current, target, Math.min(1, speed * delta));
 }
 
-function createEyeShape(isLeft: boolean): THREE.Shape {
-  const shape = new THREE.Shape();
-  const dir = isLeft ? -1 : 1;
-  const cx = dir * 0.2;
-  shape.moveTo(cx - 0.11, 0);
-  shape.quadraticCurveTo(cx, 0.09, cx + 0.11, 0);
-  shape.quadraticCurveTo(cx, -0.05, cx - 0.11, 0);
-  return shape;
-}
-
 function createHappyEyeShape(isLeft: boolean): THREE.Shape {
   const shape = new THREE.Shape();
   const dir = isLeft ? -1 : 1;
@@ -59,22 +49,20 @@ function Face({
   state: AvatarRobotState;
   mousePosition: React.MutableRefObject<{ x: number; y: number }>;
 }) {
-  const leftEyeRef = useRef<THREE.Mesh>(null);
-  const rightEyeRef = useRef<THREE.Mesh>(null);
+  const leftEyeGroupRef = useRef<THREE.Group>(null);
+  const rightEyeGroupRef = useRef<THREE.Group>(null);
+  const leftPupilRef = useRef<THREE.Mesh>(null);
+  const rightPupilRef = useRef<THREE.Mesh>(null);
   const mouthRef = useRef<THREE.Mesh>(null);
   const faceGroupRef = useRef<THREE.Group>(null);
   const blinkTimer = useRef(0);
   const blinkState = useRef(0);
   const talkTimer = useRef(0);
 
-  const eyeShape = useMemo(() => createEyeShape(true), []);
-  const eyeShapeR = useMemo(() => createEyeShape(false), []);
   const happyEyeShapeL = useMemo(() => createHappyEyeShape(true), []);
   const happyEyeShapeR = useMemo(() => createHappyEyeShape(false), []);
   const smileShape = useMemo(() => createSmileShape(), []);
 
-  const eyeGeo = useMemo(() => new THREE.ShapeGeometry(eyeShape, 16), [eyeShape]);
-  const eyeGeoR = useMemo(() => new THREE.ShapeGeometry(eyeShapeR, 16), [eyeShapeR]);
   const happyEyeGeoL = useMemo(
     () => new THREE.ShapeGeometry(happyEyeShapeL, 16),
     [happyEyeShapeL],
@@ -85,11 +73,27 @@ function Face({
   );
   const smileGeo = useMemo(() => new THREE.ShapeGeometry(smileShape, 16), [smileShape]);
 
-  const eyeMat = useMemo(() => new THREE.MeshStandardMaterial(PURPLE_GLOW), []);
+  const scleraMat = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.2, metalness: 0 }),
+    [],
+  );
+  const pupilMat = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: "#1a1a2e", roughness: 0.3, metalness: 0 }),
+    [],
+  );
+  const catchlightMat = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0, metalness: 0, emissive: "#ffffff", emissiveIntensity: 0.3 }),
+    [],
+  );
   const mouthMat = useMemo(() => new THREE.MeshStandardMaterial(PURPLE_GLOW_SOFT), []);
+  const happyEyeMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#1a1a2e", roughness: 0.3 }), []);
+
+  const eyeRadius = 0.1;
+  const pupilRadius = 0.055;
+  const catchlightRadius = 0.02;
 
   useFrame((_, delta) => {
-    if (!leftEyeRef.current || !rightEyeRef.current || !mouthRef.current) return;
+    if (!mouthRef.current) return;
 
     blinkTimer.current += delta;
     if (blinkTimer.current > 2.5 + Math.random() * 2) {
@@ -104,15 +108,18 @@ function Face({
     const blinkScale = 1 - blinkState.current * 0.9;
     const isHappy = state === "happy" || state === "greeting";
 
-    leftEyeRef.current.scale.y = blinkScale;
-    rightEyeRef.current.scale.y = blinkScale;
+    if (leftEyeGroupRef.current && rightEyeGroupRef.current) {
+      leftEyeGroupRef.current.scale.y = blinkScale;
+      rightEyeGroupRef.current.scale.y = blinkScale;
+    }
 
-    if (isHappy) {
-      leftEyeRef.current.geometry = happyEyeGeoL;
-      rightEyeRef.current.geometry = happyEyeGeoR;
-    } else {
-      leftEyeRef.current.geometry = eyeGeo;
-      rightEyeRef.current.geometry = eyeGeoR;
+    if (leftPupilRef.current && rightPupilRef.current) {
+      const lookX = mousePosition.current.x * 0.015;
+      const lookY = mousePosition.current.y * 0.01;
+      leftPupilRef.current.position.x = lookX;
+      leftPupilRef.current.position.y = lookY;
+      rightPupilRef.current.position.x = lookX;
+      rightPupilRef.current.position.y = lookY;
     }
 
     if (state === "speaking") {
@@ -154,13 +161,52 @@ function Face({
     }
   });
 
+  const isHappy = state === "happy" || state === "greeting";
+
   return (
     <group ref={faceGroupRef} position={[0, 0, 0.4]}>
       <RoundedBox args={[0.8, 0.6, 0.06]} radius={0.07} smoothness={4} position={[0, 0, -0.01]}>
         <meshPhysicalMaterial {...BLACK_GLASS} />
       </RoundedBox>
-      <mesh ref={leftEyeRef} geometry={eyeGeo} material={eyeMat} position={[-0.2, 0.06, 0.025]} />
-      <mesh ref={rightEyeRef} geometry={eyeGeoR} material={eyeMat} position={[0.2, 0.06, 0.025]} />
+
+      {/* Left eye */}
+      <group ref={leftEyeGroupRef} position={[-0.2, 0.06, 0.025]}>
+        {isHappy ? (
+          <mesh geometry={happyEyeGeoL} material={happyEyeMat} />
+        ) : (
+          <>
+            <mesh material={scleraMat}>
+              <circleGeometry args={[eyeRadius, 24]} />
+            </mesh>
+            <mesh ref={leftPupilRef} material={pupilMat} position={[0, 0, 0.005]}>
+              <circleGeometry args={[pupilRadius, 24]} />
+            </mesh>
+            <mesh material={catchlightMat} position={[0.018, 0.022, 0.008]}>
+              <circleGeometry args={[catchlightRadius, 16]} />
+            </mesh>
+          </>
+        )}
+      </group>
+
+      {/* Right eye */}
+      <group ref={rightEyeGroupRef} position={[0.2, 0.06, 0.025]}>
+        {isHappy ? (
+          <mesh geometry={happyEyeGeoR} material={happyEyeMat} />
+        ) : (
+          <>
+            <mesh material={scleraMat}>
+              <circleGeometry args={[eyeRadius, 24]} />
+            </mesh>
+            <mesh ref={rightPupilRef} material={pupilMat} position={[0, 0, 0.005]}>
+              <circleGeometry args={[pupilRadius, 24]} />
+            </mesh>
+            <mesh material={catchlightMat} position={[0.018, 0.022, 0.008]}>
+              <circleGeometry args={[catchlightRadius, 16]} />
+            </mesh>
+          </>
+        )}
+      </group>
+
       <mesh ref={mouthRef} geometry={smileGeo} material={mouthMat} position={[0, -0.1, 0.025]} />
     </group>
   );
