@@ -94,6 +94,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     console.error("Onboarding failed:", error);
-    return NextResponse.json({ error: "Could not save your profile. Please try again." }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("Prisma") || message.includes("database") || message.includes("connection")) {
+      return NextResponse.json({ error: "Database error: could not save profile. Please try again." }, { status: 500 });
+    }
+    if (message.includes("unique") || message.includes("constraint")) {
+      return NextResponse.json({ error: "Profile already exists. Please contact support." }, { status: 409 });
+    }
+    return NextResponse.json({ error: `Could not save your profile: ${message}` }, { status: 500 });
   }
 }
